@@ -7,6 +7,7 @@ import sk.macaj.weather.weatherapi.WeatherApiService;
 import sk.macaj.weather.weatherapi.dto.Weather;
 
 import javax.annotation.PostConstruct;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -21,7 +22,7 @@ public class ScheduledService {
         this.weatherApiService = weatherApiService;
         this.databaseService = databaseService;
 
-        cities = List.of("Trnava", "Bratislava", "Trencin", "Zilina", "Kosice", "Poprad", "Banska Bystrica", "Nitra", "Piestany");
+        cities = Arrays.asList("Trnava", "Bratislava", "Trencin", "Zilina", "Kosice", "Poprad", "Banska Bystrica", "Nitra", "Piestany");
     }
 
 //    @PostConstruct
