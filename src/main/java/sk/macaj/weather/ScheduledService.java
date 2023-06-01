@@ -23,6 +23,7 @@ public class ScheduledService {
         this.databaseService = databaseService;
 
         cities = Arrays.asList("Trnava", "Bratislava", "Trencin", "Zilina", "Kosice", "Poprad", "Banska Bystrica", "Nitra", "Piestany");
+        //cities = Arrays.asList("Banska Bystrica");
     }
 
 //    @PostConstruct
