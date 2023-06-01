@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,7 @@ public class WeatherController {
 
         List<Weather> weathers = weatherRepository.findByLocationAndUpdatedBetween(location, from, calTo.getTime());
 
-        return weathers.stream().collect(Collectors.toMap(Weather::getUpdated, Function.identity()));
+        return weathers.stream().collect(Collectors.toMap(Weather::getUpdated, Function.identity(), (first, second) -> first));
     }
 
     private Date getDate(String d) throws Exception {
