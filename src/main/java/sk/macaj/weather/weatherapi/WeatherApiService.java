@@ -32,6 +32,6 @@ public class WeatherApiService {
     }
 
     private URL createUrl(String city) throws MalformedURLException {
-        return new URL("http://api.weatherapi.com/v1/current.json?key=" + weatherKey + "&q=" + city + "&aqi=no");
+        return new URL("http://api.weatherapi.com/v1/current.json?key=" + weatherKey + "&q=" + city.replaceAll(" ", "%20") + "&aqi=no");
     }
 }
