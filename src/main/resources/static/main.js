@@ -253,6 +253,51 @@ $(document).ready(function() {
         unknown: 'Nezname'
     };
 
+    let conditionIcons = {
+        sunny:
+            '<svg viewBox="0 0 48 48" aria-hidden="true">' +
+                '<circle cx="24" cy="24" r="9"></circle>' +
+                '<line x1="24" y1="6" x2="24" y2="12"></line>' +
+                '<line x1="24" y1="36" x2="24" y2="42"></line>' +
+                '<line x1="6" y1="24" x2="12" y2="24"></line>' +
+                '<line x1="36" y1="24" x2="42" y2="24"></line>' +
+                '<line x1="11" y1="11" x2="15" y2="15"></line>' +
+                '<line x1="33" y1="33" x2="37" y2="37"></line>' +
+                '<line x1="33" y1="15" x2="37" y2="11"></line>' +
+                '<line x1="11" y1="37" x2="15" y2="33"></line>' +
+            '</svg>',
+        cloudy:
+            '<svg viewBox="0 0 64 48" aria-hidden="true">' +
+                '<circle cx="24" cy="24" r="12"></circle>' +
+                '<circle cx="38" cy="20" r="14"></circle>' +
+                '<rect x="12" y="24" width="40" height="16" rx="8"></rect>' +
+            '</svg>',
+        rainy:
+            '<svg viewBox="0 0 64 56" aria-hidden="true">' +
+                '<circle cx="24" cy="20" r="12"></circle>' +
+                '<circle cx="38" cy="16" r="14"></circle>' +
+                '<rect x="12" y="20" width="40" height="16" rx="8"></rect>' +
+                '<line x1="20" y1="40" x2="16" y2="50"></line>' +
+                '<line x1="32" y1="40" x2="28" y2="52"></line>' +
+                '<line x1="44" y1="40" x2="40" y2="50"></line>' +
+            '</svg>',
+        snowy:
+            '<svg viewBox="0 0 64 56" aria-hidden="true">' +
+                '<circle cx="24" cy="20" r="12"></circle>' +
+                '<circle cx="38" cy="16" r="14"></circle>' +
+                '<rect x="12" y="20" width="40" height="16" rx="8"></rect>' +
+                '<circle cx="20" cy="44" r="3"></circle>' +
+                '<circle cx="32" cy="48" r="3"></circle>' +
+                '<circle cx="44" cy="44" r="3"></circle>' +
+            '</svg>',
+        unknown:
+            '<svg viewBox="0 0 48 48" aria-hidden="true">' +
+                '<circle cx="24" cy="24" r="12"></circle>' +
+                '<line x1="24" y1="16" x2="24" y2="26"></line>' +
+                '<circle cx="24" cy="32" r="2"></circle>' +
+            '</svg>'
+    };
+
     let renderConditionChart = function(data) {
         if (!data || data.length === 0) {
             $('#condition-content').html('<div class="chart-empty">Ziadne data pre vybrany rozsah.</div>');
@@ -260,7 +305,6 @@ $(document).ready(function() {
         }
 
         let items = data.map(item => {
-            let label = conditionLabels[item.condition] || conditionLabels.unknown;
             let status = item.condition || 'unknown';
             let date = item.date || '';
             let displayDate = date;
@@ -271,7 +315,10 @@ $(document).ready(function() {
             return (
                 '<div class="condition-day">' +
                     '<div class="condition-date">' + displayDate + '</div>' +
-                    '<div class="condition-status ' + status + '">' + label + '</div>' +
+                    '<div class="condition-icon condition-icon-' + status + '">' +
+                        (conditionIcons[status] || conditionIcons.unknown) +
+                        '<span class="sr-only">' + (conditionLabels[status] || conditionLabels.unknown) + '</span>' +
+                    '</div>' +
                 '</div>'
             );
         }).join('');

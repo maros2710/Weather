@@ -379,6 +379,7 @@ label {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: center;
 }
 
 .condition-date {
@@ -386,39 +387,69 @@ label {
   color: var(--muted);
 }
 
-.condition-status {
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.condition-icon {
+  width: 44px;
+  height: 44px;
 }
 
-.condition-status::before {
-  content: "";
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  display: inline-block;
+.condition-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: rgba(31, 26, 18, 0.4);
+  stroke-width: 2;
+  fill: none;
 }
 
-.condition-status.sunny::before {
-  background: #ffb648;
+.condition-icon-sunny svg {
+  stroke: #ff9c2a;
 }
 
-.condition-status.cloudy::before {
-  background: #7a8b98;
+.condition-icon-sunny svg circle {
+  fill: rgba(255, 182, 72, 0.35);
+  stroke: #ff9c2a;
 }
 
-.condition-status.rainy::before {
-  background: #3b6ea8;
+.condition-icon-cloudy svg {
+  stroke: #7a8b98;
 }
 
-.condition-status.snowy::before {
-  background: #9fd3ff;
+.condition-icon-cloudy svg circle,
+.condition-icon-cloudy svg rect {
+  fill: rgba(122, 139, 152, 0.35);
 }
 
-.condition-status.unknown::before {
-  background: #c2b8aa;
+.condition-icon-rainy svg {
+  stroke: #3b6ea8;
+}
+
+.condition-icon-rainy svg circle,
+.condition-icon-rainy svg rect {
+  fill: rgba(59, 110, 168, 0.18);
+}
+
+.condition-icon-snowy svg {
+  stroke: #5fa3dd;
+}
+
+.condition-icon-snowy svg circle,
+.condition-icon-snowy svg rect {
+  fill: rgba(159, 211, 255, 0.35);
+}
+
+.condition-icon-unknown svg {
+  stroke: #9a9083;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .ui-datepicker {
