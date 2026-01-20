@@ -10,20 +10,36 @@ $(document).ready(function() {
         let weather = weatherData[d];
 
         if(weather) {
-            $('#weather').append('<div><img src="' + weather.icon + '"></div>');
-            $('#weather').append('<div>Pocasie:&nbsp;' + weather.text + '</div>');
-            $('#weather').append('<div>Teplota:&nbsp;' + weather.tempC + '</div>');
-            $('#weather').append('<div>Pocitova teplota:&nbsp;' + weather.feelsLikeC + '</div>');
-            $('#weather').append('<div>Oblaky:&nbsp;' + weather.cloud + '</div>');
-            $('#weather').append('<div>Zrazky (mm):&nbsp;' + weather.precipMM + '</div>');
-            $('#weather').append('<div>Vietor (km/h):&nbsp;' + weather.windKph + '</div>');
-            $('#weather').append('<div>Narazy (km/h):&nbsp;' + weather.gustKph + '</div>');
-            $('#weather').append('<div>Smer vetra:&nbsp;' + weather.windDir + '</div>');
-            $('#weather').append('<div>Vlhkost:&nbsp;' + weather.humidity + '</div>');
-            $('#weather').append('<div>Tlak (MB):&nbsp;' + weather.pressureMB + '</div>');
-            $('#weather').append('<div>UV index:&nbsp;' + weather.uv + '</div>');
+            let details = [
+                { label: 'Oblaky', value: weather.cloud },
+                { label: 'Zrazky (mm)', value: weather.precipMM },
+                { label: 'Vietor (km/h)', value: weather.windKph },
+                { label: 'Narazy (km/h)', value: weather.gustKph },
+                { label: 'Smer vetra', value: weather.windDir },
+                { label: 'Vlhkost', value: weather.humidity },
+                { label: 'Tlak (MB)', value: weather.pressureMB },
+                { label: 'UV index', value: weather.uv }
+            ];
+
+            let detailMarkup = details.map(item =>
+                '<div class="weather-item"><span>' + item.label + '</span><strong>' + item.value + '</strong></div>'
+            ).join('');
+
+            let iconMarkup = weather.icon ? '<img src="' + weather.icon + '" alt="' + weather.text + '">' : '';
+
+            $('#weather').html(
+                '<div class="weather-header">' +
+                    '<div class="weather-icon">' + iconMarkup + '</div>' +
+                    '<div>' +
+                        '<div class="weather-title">' + weather.text + '</div>' +
+                        '<div class="weather-temp">' + weather.tempC + '&deg;C</div>' +
+                        '<div class="weather-feels">Pocitovo ' + weather.feelsLikeC + '&deg;C</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="weather-grid">' + detailMarkup + '</div>'
+            );
         } else {
-            $('#weather').append('<div>Ziadne data</div>');
+            $('#weather').append('<div class="weather-empty">Ziadne data</div>');
         }
     };
 
@@ -34,12 +50,11 @@ $(document).ready(function() {
         $.get( "/city/" + city + "/" + date, function(data) {
             weatherData = data;
 
-            $("#weather").html("test");
-
             $("#datetime").html("");
 
-            Object.keys(weatherData).forEach(key => {
-                $("#datetime").append("<option value='" + key + "'>" + key + "</option>");
+            Object.keys(weatherData).sort(compareKeysByTime).forEach(key => {
+                let formattedTime = formatTime(key);
+                $("#datetime").append("<option value='" + key + "'>" + formattedTime + "</option>");
             });
 
             fillWeather();
@@ -65,5 +80,289 @@ $(document).ready(function() {
         load();
     });
 
+    $('.tab-button').on('click', function() {
+        let target = $(this).data('tab');
+        $('.tab-button').removeClass('is-active');
+        $(this).addClass('is-active');
+        $('.tab-panel').removeClass('is-active');
+        $('#' + target).addClass('is-active');
+    });
+
+    let formatTime = function(value) {
+        let isoMatch = value.match(/T(\d{2}:\d{2})/);
+        if (isoMatch) {
+            return isoMatch[1];
+        }
+        let parsed = new Date(value);
+        if (isNaN(parsed.getTime())) {
+            let match = value.match(/(\d{1,2}:\d{2})(?::\d{2})?/);
+            return match ? match[1] : value;
+        }
+        return parsed.toLocaleTimeString('sk-SK', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    let compareKeysByTime = function(a, b) {
+        let dateA = new Date(a);
+        let dateB = new Date(b);
+        let timeA = isNaN(dateA.getTime()) ? 0 : dateA.getTime();
+        let timeB = isNaN(dateB.getTime()) ? 0 : dateB.getTime();
+        return timeA - timeB;
+    };
+
+    let chartMetricLabels = {
+        avgTemp: 'Priemerna teplota',
+        avgTempDay: 'Priemerna teplota cez den',
+        avgFeels: 'Priemerna pocitova teplota',
+        avgFeelsDay: 'Priemerna pocitova teplota cez den',
+        minTemp: 'Minimalna teplota',
+        maxTemp: 'Maximalna teplota'
+    };
+
+    let parseDateValue = function(value) {
+        let parts = value.split('.');
+        if (parts.length !== 3) {
+            return null;
+        }
+        let day = parseInt(parts[0], 10);
+        let month = parseInt(parts[1], 10) - 1;
+        let year = parseInt(parts[2], 10);
+        let parsed = new Date(year, month, day);
+        return isNaN(parsed.getTime()) ? null : parsed;
+    };
+
+    let formatDateValue = function(date) {
+        let day = String(date.getDate()).padStart(2, '0');
+        let month = String(date.getMonth() + 1).padStart(2, '0');
+        let year = date.getFullYear();
+        return day + '.' + month + '.' + year;
+    };
+
+    let renderChart = function(data, metricKey) {
+        let title = chartMetricLabels[metricKey] || 'Graf';
+        $('#chart-title').text(title);
+
+        if (!data || data.length === 0) {
+            $('#chart-content').html('<div class="chart-empty">Ziadne data pre vybrany rozsah.</div>');
+            return;
+        }
+
+        let values = data.map(item => item[metricKey]);
+        let numericValues = values.filter(value => value !== null && value !== undefined);
+        if (numericValues.length === 0) {
+            $('#chart-content').html('<div class="chart-empty">Ziadne data pre zvoleny typ.</div>');
+            return;
+        }
+
+        let min = Math.min.apply(null, numericValues);
+        let max = Math.max.apply(null, numericValues);
+        if (min === max) {
+            min = min - 1;
+            max = max + 1;
+        }
+
+        let width = 700;
+        let height = 260;
+        let padding = { top: 20, right: 20, bottom: 40, left: 48 };
+        let plotWidth = width - padding.left - padding.right;
+        let plotHeight = height - padding.top - padding.bottom;
+
+        let points = data.map((item, index) => {
+            let value = item[metricKey];
+            if (value === null || value === undefined) {
+                return null;
+            }
+            let x = padding.left + (index / Math.max(data.length - 1, 1)) * plotWidth;
+            let ratio = (value - min) / (max - min);
+            let y = padding.top + (1 - ratio) * plotHeight;
+            return {
+                x: x,
+                y: y,
+                value: value,
+                label: item.date
+            };
+        });
+
+        let path = '';
+        let started = false;
+        points.forEach(point => {
+            if (!point) {
+                started = false;
+                return;
+            }
+            if (!started) {
+                path += 'M ' + point.x + ' ' + point.y;
+                started = true;
+            } else {
+                path += ' L ' + point.x + ' ' + point.y;
+            }
+        });
+
+        let gridLines = '';
+        let ticks = 4;
+        for (let i = 0; i <= ticks; i++) {
+            let y = padding.top + (i / ticks) * plotHeight;
+            let value = max - (i / ticks) * (max - min);
+            gridLines += '<line class="chart-grid" x1="' + padding.left + '" y1="' + y + '" x2="' + (width - padding.right) + '" y2="' + y + '"></line>';
+            gridLines += '<text class="chart-label" x="10" y="' + (y + 4) + '">' + value.toFixed(1) + '</text>';
+        }
+
+        let pointMarkup = '';
+        points.forEach(point => {
+            if (!point) {
+                return;
+            }
+            pointMarkup += '<circle class="chart-point" cx="' + point.x + '" cy="' + point.y + '" r="4"' +
+                ' data-value="' + point.value.toFixed(1) + '"' +
+                ' data-label="' + point.label + '"></circle>';
+        });
+
+        let labelStep = Math.ceil(data.length / 6);
+        let labels = '';
+        data.forEach((item, index) => {
+            if (index % labelStep !== 0 && index !== data.length - 1) {
+                return;
+            }
+            let x = padding.left + (index / Math.max(data.length - 1, 1)) * plotWidth;
+            let labelDate = item.date;
+            if (labelDate && labelDate.includes('-')) {
+                let parts = labelDate.split('-');
+                labelDate = parts[2] + '.' + parts[1];
+            }
+            labels += '<text class="chart-label" x="' + (x - 12) + '" y="' + (height - 12) + '">' + labelDate + '</text>';
+        });
+
+        let svg = '<svg class="chart-svg" viewBox="0 0 ' + width + ' ' + height + '" role="img" aria-label="' + title + '">' +
+            gridLines +
+            '<path class="chart-line" d="' + path + '"></path>' +
+            pointMarkup +
+            labels +
+            '</svg>';
+
+        $('#chart-content').html('<div id="chart-tooltip" class="chart-tooltip"></div>' + svg);
+        bindChartTooltip();
+    };
+
+    let conditionLabels = {
+        sunny: 'Slnecno',
+        cloudy: 'Zamracene',
+        rainy: 'Prsalo',
+        snowy: 'Snezenie',
+        unknown: 'Nezname'
+    };
+
+    let renderConditionChart = function(data) {
+        if (!data || data.length === 0) {
+            $('#condition-content').html('<div class="chart-empty">Ziadne data pre vybrany rozsah.</div>');
+            return;
+        }
+
+        let items = data.map(item => {
+            let label = conditionLabels[item.condition] || conditionLabels.unknown;
+            let status = item.condition || 'unknown';
+            let date = item.date || '';
+            let displayDate = date;
+            if (displayDate.includes('-')) {
+                let parts = displayDate.split('-');
+                displayDate = parts[2] + '.' + parts[1];
+            }
+            return (
+                '<div class="condition-day">' +
+                    '<div class="condition-date">' + displayDate + '</div>' +
+                    '<div class="condition-status ' + status + '">' + label + '</div>' +
+                '</div>'
+            );
+        }).join('');
+
+        $('#condition-content').html('<div class="condition-grid">' + items + '</div>');
+    };
+
+    let bindChartTooltip = function() {
+        let chartContent = $('#chart-content');
+        let tooltip = $('#chart-tooltip');
+        if (!tooltip.length) {
+            return;
+        }
+
+        let moveTooltip = function(event) {
+            let offset = chartContent.offset();
+            let x = event.pageX - offset.left + 12;
+            let y = event.pageY - offset.top - 32;
+            tooltip.css({ left: x + 'px', top: y + 'px' });
+        };
+
+        chartContent.find('.chart-point').on('mouseenter', function(event) {
+            let value = $(this).data('value');
+            let label = $(this).data('label');
+            tooltip.html('<strong>' + value + ' C</strong><span>' + label + '</span>');
+            tooltip.addClass('is-visible');
+            moveTooltip(event);
+        });
+
+        chartContent.find('.chart-point').on('mousemove', function(event) {
+            moveTooltip(event);
+        });
+
+        chartContent.find('.chart-point').on('mouseleave', function() {
+            tooltip.removeClass('is-visible');
+        });
+    };
+
+    let loadChart = function() {
+        let city = $('#chart-city').val();
+        let from = $('#chart-from').val();
+        let to = $('#chart-to').val();
+        let metric = $('#chart-metric').val();
+
+        if (!city || !from || !to) {
+            return;
+        }
+
+        let fromDate = parseDateValue(from);
+        let toDate = parseDateValue(to);
+        if (!fromDate || !toDate) {
+            return;
+        }
+        if (fromDate > toDate) {
+            let temp = fromDate;
+            fromDate = toDate;
+            toDate = temp;
+            $('#chart-from').val(formatDateValue(fromDate));
+            $('#chart-to').val(formatDateValue(toDate));
+        }
+
+        $.get("/chart/" + city + "/" + $('#chart-from').val() + "/" + $('#chart-to').val(), function(data) {
+            renderChart(data, metric);
+            renderConditionChart(data);
+        });
+    };
+
+    $('#chart-city, #chart-metric').change(function() {
+        loadChart();
+    });
+
+    $('#chart-from, #chart-to').change(function() {
+        loadChart();
+    });
+
     load();
+
+    $('#chart-from').datepicker({
+        dateFormat: "dd.mm.yy",
+        minDate: new Date(2023, 5 - 1, 31)
+    });
+    $('#chart-to').datepicker({
+        dateFormat: "dd.mm.yy",
+        minDate: new Date(2023, 5 - 1, 31)
+    });
+
+    let today = new Date();
+    let weekAgo = new Date();
+    weekAgo.setDate(today.getDate() - 6);
+    $('#chart-from').datepicker('setDate', weekAgo);
+    $('#chart-to').datepicker('setDate', today);
+
+    loadChart();
 });

@@ -1,6 +1,13 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Space+Grotesk:wght@400;500;600&display=swap"
+            rel="stylesheet">
     <script
             src="https://code.jquery.com/jquery-3.7.0.min.js"
             integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
@@ -11,34 +18,113 @@
             integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0="
             crossorigin="anonymous"></script>
     <link rel="stylesheet" href="jquery-ui.css">
+    <link rel="stylesheet" href="styles.css">
 
-    <script src="main.js"></script>
+    <script src="main.js?v=20240202"></script>
 </head>
 
 <body>
-    <div>
-        Datum:&nbsp;<input type="text" id="date">&nbsp;
-        Mesto:&nbsp;
-        <select id="city">
-            <option value="Trnava">Trnava</option>
-            <option value="Bratislava">Bratislava</option>
-            <option value="Trencin">Trencin</option>
-            <option value="Zilina">Zilina</option>
-            <option value="Kosice">Kosice</option>
-            <option value="Poprad">Poprad</option>
-            <option value="Banska Bystrica">Banska Bystrica</option>
-            <option value="Nitra">Nitra</option>
-            <option value="Piestany">Piestany</option>
-        </select>
-    </div>
-    <br/><br/>
+    <main class="page">
+        <header class="hero">
+            <div>
+                <p class="eyebrow">Mestsky prehlad pocasia</p>
+                <p class="lead">Vyberte datum a mesto, potom si pozrite posledne meranie.</p>
+            </div>
+        </header>
 
-    Aktualizácia:&nbsp;<select id="datetime">
-    </select>
+        <nav class="tabs">
+            <button class="tab-button is-active" data-tab="live-view">Aktualne</button>
+            <button class="tab-button" data-tab="chart-view">Grafy</button>
+        </nav>
 
-    <div id="weather">
+        <section id="live-view" class="tab-panel is-active">
+            <div class="controls card">
+                <div class="field">
+                    <label for="date">Datum</label>
+                    <input type="text" id="date" class="input">
+                </div>
+                <div class="field">
+                    <label for="city">Mesto</label>
+                    <select id="city" class="input">
+                        <option value="Trnava">Trnava</option>
+                        <option value="Bratislava">Bratislava</option>
+                        <option value="Trencin">Trencin</option>
+                        <option value="Zilina">Zilina</option>
+                        <option value="Kosice">Kosice</option>
+                        <option value="Poprad">Poprad</option>
+                        <option value="Banska Bystrica">Banska Bystrica</option>
+                        <option value="Nitra">Nitra</option>
+                        <option value="Piestany">Piestany</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="datetime">Aktualizacia</label>
+                    <select id="datetime" class="input"></select>
+                </div>
+            </div>
 
-    </div>
+            <section id="weather" class="weather card"></section>
+        </section>
+
+        <section id="chart-view" class="tab-panel">
+            <div class="controls card chart-controls">
+                <div class="field">
+                    <label for="chart-city">Mesto</label>
+                    <select id="chart-city" class="input">
+                        <option value="Trnava">Trnava</option>
+                        <option value="Bratislava">Bratislava</option>
+                        <option value="Trencin">Trencin</option>
+                        <option value="Zilina">Zilina</option>
+                        <option value="Kosice">Kosice</option>
+                        <option value="Poprad">Poprad</option>
+                        <option value="Banska Bystrica">Banska Bystrica</option>
+                        <option value="Nitra">Nitra</option>
+                        <option value="Piestany">Piestany</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="chart-from">Od</label>
+                    <input type="text" id="chart-from" class="input">
+                </div>
+                <div class="field">
+                    <label for="chart-to">Do</label>
+                    <input type="text" id="chart-to" class="input">
+                </div>
+                <div class="field">
+                    <label for="chart-metric">Typ</label>
+                    <select id="chart-metric" class="input">
+                        <option value="avgTemp">Priemerna teplota</option>
+                        <option value="avgTempDay">Priemerna teplota cez den</option>
+                        <option value="avgFeels">Priemerna pocitova teplota</option>
+                        <option value="avgFeelsDay">Priemerna pocitova teplota cez den</option>
+                        <option value="minTemp">Minimalna teplota</option>
+                        <option value="maxTemp">Maximalna teplota</option>
+                    </select>
+                </div>
+            </div>
+
+            <section class="card chart-card">
+                <div id="chart-title" class="chart-title">Priemerna teplota</div>
+                <div id="chart-content" class="chart-content">
+                    <div class="chart-empty">Zvolte rozsah a mesto pre zobrazenie grafu.</div>
+                </div>
+            </section>
+
+            <section class="card chart-card">
+                <div id="condition-title" class="chart-title">Pocasie v dnoch</div>
+                <div class="condition-legend">
+                    <span class="legend-item sunny">Slnecno</span>
+                    <span class="legend-item cloudy">Zamracene</span>
+                    <span class="legend-item rainy">Prsalo</span>
+                    <span class="legend-item snowy">Snezenie</span>
+                    <span class="legend-item unknown">Nezname</span>
+                </div>
+                <div id="condition-content" class="chart-content">
+                    <div class="chart-empty">Zvolte rozsah a mesto pre zobrazenie grafu.</div>
+                </div>
+            </section>
+        </section>
+    </main>
 </body>
 
 </html>
